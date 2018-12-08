@@ -1,0 +1,31 @@
+﻿div.Nskd_XSheet
+{
+    font-family: Verdana;
+    font-size: 8pt;
+}
+div.Nskd_XSheet table
+{
+    border-collapse: collapse;
+}
+div.Nskd_XSheet td
+{
+    border: 1px solid black;
+}
+div.Nskd_XSheet td.expand
+{
+    border: none;
+    width: 10px;
+    text-align: center;
+}
+.tar
+{
+    text-align: right;
+}
+.tal
+{
+    text-align: left;
+}
+.dn
+{
+    display: none;
+}

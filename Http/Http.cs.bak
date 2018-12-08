@@ -1,0 +1,91 @@
+﻿using System;
+using System.Collections;
+using System.Data;
+using System.IO;
+using System.Text;
+using System.Xml.Serialization;
+
+namespace Nskd.Http
+{
+    public class RequestPackage
+    {
+        public Guid SessionId;
+        public String Command;
+        public RequestParameter[] Parameters;
+        public Byte[] ToJson(Encoding enc)
+        {
+            Byte[] buff = null;
+            String str = Nskd.JsonV2.ToString(this);
+            buff = enc.GetBytes(str);
+            return buff;
+        }
+        public Byte[] ToXml(Encoding enc)
+        {
+            Byte[] buff = null;
+            using (MemoryStream ms = new MemoryStream())
+            {
+                using (TextWriter tw = new StreamWriter(ms, enc))
+                {
+                    XmlSerializer sr = new XmlSerializer(typeof(RequestPackage));
+                    sr.Serialize(tw, this);
+                    buff = ms.ToArray();
+                }
+            }
+            return buff;
+        }
+    }
+
+    [XmlInclude(typeof(DBNull))]
+    public class RequestParameter
+    {
+        public String Name { get; set; }
+        public Object Value { get; set; }
+    }
+
+    public class ResponsePackage
+    {
+        public String Status { get; set; }
+        public DataSet Data { get; set; }
+        public static ResponsePackage ParseJson(String str)
+        {
+            ResponsePackage rsm = new ResponsePackage();
+            Object o = Nskd.JsonV2.Parse(str);
+            if ((o != null) && (o.GetType() == typeof(Hashtable)))
+            {
+                Hashtable package = (Hashtable)o;
+                if ((package.ContainsKey("Status")) && (package["Status"] != null))
+                {
+                    rsm.Status = (String)package["Status"];
+                }
+                if (package.ContainsKey("Data") && (package["Data"] != null))
+                {
+                    rsm.Data = new DataSet();
+                    Hashtable data = (Hashtable)package["Data"];
+                    if (data.ContainsKey("tables") && (data["tables"] != null))
+                    {
+                        Object[] tables = (Object[])data["tables"];
+                        for (int ti = 0; ti < tables.Length; ti++)
+                        {
+                            rsm.Data.Tables.Add((DataTable)tables[ti]);
+                        }
+                    }
+                }
+            }
+            return rsm;
+        }
+        public static ResponsePackage ParseXml(String str)
+        {
+            ResponsePackage rsp = null;
+            Encoding enc = (str.Contains("utf-8")) ? Encoding.UTF8 : Encoding.Unicode;
+            using (MemoryStream ms = new MemoryStream(enc.GetBytes(str)))
+            {
+                using (TextReader tr = new StreamReader(ms, enc))
+                {
+                    XmlSerializer sr = new XmlSerializer(typeof(ResponsePackage));
+                    rsp = (ResponsePackage)sr.Deserialize(tr);
+                }
+            }
+            return rsp;
+        }
+    }
+}
