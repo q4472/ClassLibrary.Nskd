@@ -101,6 +101,7 @@ namespace Nskd
         {
             RequestPackage rqp = null;
             String body = null;
+            inputStream.Position = 0;
             using (StreamReader sr = new StreamReader(inputStream, contentEncoding))
             {
                 body = sr.ReadToEnd();
