@@ -116,7 +116,18 @@ namespace Nskd
                     case '<':
                         rqp = RequestPackage.ParseXml(body);
                         break;
-                    default:
+                    default: // Parse 'GoToTheNewPage' - старая пересылка, созданная когда ещё небыло RequestPackage.
+                        // sessionId=xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
+                        if (body[0] == 's' && body.Length == 46)
+                        {
+                            if (Guid.TryParse(body.Substring(10, 36), out Guid sessionId))
+                            {
+                                rqp = new RequestPackage
+                                {
+                                    SessionId = sessionId
+                                };
+                            }
+                        }
                         break;
                 }
             }
